@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# MacOS
+.DS_Store
+
+# UI (As requested to keep private/separate)
+frontend/
+
+# Local data
+backend/uploads/
+backend/temp_screenshots/
