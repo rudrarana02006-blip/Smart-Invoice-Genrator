@@ -296,7 +296,7 @@ async def request_otp(data: OTPRequest):
             email=data.email,
             otp=otp,
             subject="Verification Code",
-            body_text="Welcome to Devleds. Use the following code to verify your identity."
+            body_text="Welcome to Smart Invoice. Use the following code to verify your identity."
         )
     except Exception as e:
         print(f"❌  SMTP ERROR (Registration): {str(e)}")
@@ -393,8 +393,8 @@ async def forgot_password(data: PasswordRecoveryRequest):
         await send_otp_email(
             email=data.email, 
             otp=otp,
-            subject="Your Devleds Password Recovery Code",
-            body_text=f"Your Devleds password recovery code is: {otp}. This code expires in 5 minutes."
+            subject="Your Smart Invoice Password Recovery Code",
+            body_text=f"Your Smart Invoice password recovery code is: {otp}. This code expires in 5 minutes."
         )
     except Exception as e:
         return JSONResponse(

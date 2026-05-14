@@ -9,7 +9,7 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # App
-    APP_NAME: str = "Devleds Generator"
+    APP_NAME: str = "Smart Invoice Generator"
     DEBUG: bool = True
 
     # Database
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     MAIL_PORT: int = 587
     MAIL_USERNAME: Optional[str] = None
     MAIL_PASSWORD: Optional[str] = None
-    MAIL_FROM_NAME: str = "Devleds Generator"
+    MAIL_FROM_NAME: str = "Smart Invoice Generator"
     MAIL_FROM_EMAIL: Optional[str] = None
     ADMIN_EMAIL: Optional[str] = None
 

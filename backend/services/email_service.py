@@ -1,6 +1,6 @@
 """
 Email Service — Centralized system for all automated email communications.
-Design-aligned with the premium Devleds aesthetic (Black/Orange/Glass).
+Design-aligned with the premium Smart Invoice aesthetic (Black/Orange/Glass).
 """
 import smtplib
 from email.mime.text import MIMEText
@@ -13,7 +13,7 @@ async def send_otp_email(email: str, otp: str, subject: str = "Verification Code
     html_template = f"""
     <div style="font-family: 'Inter', sans-serif; background: #000; color: #fff; padding: 40px; max-width: 500px; border: 1px solid #222; border-radius: 12px; margin: 0 auto;">
         <div style="font-family: 'NDot', monospace; font-size: 24px; border-bottom: 1px solid #1a1a1a; padding-bottom: 20px; margin-bottom: 30px; letter-spacing: 2px;">
-            DEVLEDS. <span style="color: #FF5722;">AUTH</span>
+            SMART INVOICE. <span style="color: #FF5722;">AUTH</span>
         </div>
         
         <h2 style="font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 10px;">Security Verification</h2>
@@ -33,7 +33,7 @@ async def send_otp_email(email: str, otp: str, subject: str = "Verification Code
         </p>
         
         <div style="font-size: 9px; color: #222; margin-top: 60px; border-top: 1px solid #111; padding-top: 20px; text-align: center; text-transform: uppercase; letter-spacing: 3px;">
-            Devleds inc. — intelligent billing systems
+            Smart Invoice inc. — intelligent billing systems
         </div>
     </div>
     """
@@ -48,7 +48,7 @@ async def send_password_reset_confirmation(email: str, location: str = "Unknown"
     html_template = f"""
     <div style="font-family: 'Inter', sans-serif; background: #000; color: #fff; padding: 40px; max-width: 500px; border: 1px solid #222; border-radius: 12px; margin: 0 auto;">
         <div style="font-family: 'NDot', monospace; font-size: 24px; border-bottom: 1px solid #1a1a1a; padding-bottom: 20px; margin-bottom: 30px; letter-spacing: 2px;">
-            DEVLEDS. <span style="color: #FF5722;">SECURITY</span>
+            SMART INVOICE. <span style="color: #FF5722;">SECURITY</span>
         </div>
         
         <h2 style="font-size: 16px; text-transform: uppercase; letter-spacing: 1px; color: #fff;">Password Updated</h2>

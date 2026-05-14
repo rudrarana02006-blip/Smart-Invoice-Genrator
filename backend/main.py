@@ -1,5 +1,5 @@
 """
-Devleds Generator — Main FastAPI Application
+Smart Invoice Generator — Main FastAPI Application
 Entry point for the backend server.
 """
 
@@ -93,7 +93,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Backend API for Devleds Generator",
+    description="Backend API for Smart Invoice Generator",
     version="1.0.0",
     lifespan=lifespan
 )
