@@ -60,8 +60,10 @@ Smart Invoice Engine is a high-performance, design-centric billing platform. It 
 
 ---
 
-## 🎨 Design Philosophy
-The Smart Invoice Engine follows the **Nothing Tech × Apple** aesthetic—minimalist, high-contrast, and focused on micro-interactions that make financial management feel premium.
+## 🎨 Design & Frontend Architecture
+> **Note: The frontend source code is currently kept in a private internal repository to protect proprietary design assets and original UI logic. This public repository focuses strictly on the Backend API and AI Engine.**
+
+The Smart Invoice Engine follows the **Nothing Tech × Apple** aesthetic—minimalist, high-contrast, and focused on micro-interactions. While the UI is private, the backend routes are fully documented here for integration purposes.
 
 ---
 
