@@ -24,20 +24,16 @@ except ImportError:
     class GeocoderTimedOut(Exception): pass
     class GeocoderServiceError(Exception): pass
 
-# Setup Geocoding Fallback via Gemini (Compatible SDK)
-if not os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY") == "your_gemini_api_key_here":
-    genai.configure(api_key="MISSING")
-else:
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+from config import settings, get_gemini_model
 
-# Use Gemini 1.5 Pro for maximum geospatial intelligence
-geo_model = genai.GenerativeModel(model_name='gemini-1.5-pro')
+# Use Gemini with Dynamic Discovery for Geospatial intelligence
+genai.configure(api_key=settings.GEMINI_API_KEY)
+geo_model = get_gemini_model(vision=False) # Pro is preferred but Flash works too
 
 router = APIRouter()
 
 # Simple City to Lat/Lng Mapping Helper
 CITY_COORDS = {
-    # Tier 1 & 2
     # Tier 1 & 2
     "delhi": [28.6139, 77.2090],
     "mumbai": [19.0760, 72.8777],
@@ -197,7 +193,16 @@ async def get_analytics_summary(
         {
             "$facet": {
                 "status_counts": [
-                    {"$group": {"_id": "$status", "count": {"$sum": 1}, "total_amount": {"$sum": "$grand_total"}}}
+                    {
+                        "$group": {
+                            "_id": {
+                                "is_sent": "$is_sent",
+                                "is_paid": "$is_paid"
+                            }, 
+                            "count": {"$sum": 1}, 
+                            "total_amount": {"$sum": "$grand_total"}
+                        }
+                    }
                 ],
                 "monthly_revenue": [
                     {
@@ -205,10 +210,10 @@ async def get_analytics_summary(
                             "month": {"$month": "$created_at"},
                             "year": {"$year": "$created_at"},
                             "grand_total": 1,
-                            "status": 1
+                            "is_paid": 1
                         }
                     },
-                    {"$match": {"status": "paid"}},
+                    {"$match": {"is_paid": True}},
                     {
                         "$group": {
                             "_id": {"month": "$month", "year": "$year"},

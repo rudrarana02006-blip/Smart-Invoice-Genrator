@@ -17,7 +17,7 @@ def _get_settings():
     return settings
 
 
-from database import get_profile_collection, db
+from database import get_profile_collection
 
 async def generate_invoice_pdf(invoice_data: dict, org_id: str) -> bytes:
     """
@@ -99,14 +99,51 @@ async def generate_invoice_pdf(invoice_data: dict, org_id: str) -> bytes:
         if v is None:
             company[k] = ""
             
-    for k, v in invoice_data.items():
-        if v is None:
-            invoice_data[k] = ""
+    def clean_data(data, is_numeric=False):
+        if isinstance(data, dict):
+            # Fields that must be numeric for Jinja formatting
+            numeric_fields = ['subtotal', 'grand_total', 'total_tax', 'tax_1_amount', 'tax_2_amount', 'tax_1_rate', 'tax_2_rate', 'amount', 'rate', 'quantity']
+            return {k: clean_data(v, k in numeric_fields) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [clean_data(i) for i in data]
+        elif data is None:
+            return 0.0 if is_numeric else ""
+        return data
+
+    # FORCE SCHEMA (Backward compatibility for old invoices)
+    invoice_defaults = {
+        'tax_1_name': 'CGST', 'tax_1_rate': 0.0, 'tax_1_amount': 0.0,
+        'tax_2_name': 'SGST', 'tax_2_rate': 0.0, 'tax_2_amount': 0.0,
+        'total_tax': 0.0, 'notes': '', 'client_address': '',
+        'invoice_number_prefix': 'INV-', 'selected_bank': None
+    }
+    # Merge defaults into invoice_data if they are missing
+    for key, val in invoice_defaults.items():
+        if key not in invoice_data:
+            invoice_data[key] = val
+
+    company = clean_data(company)
+    invoice_data = clean_data(invoice_data)
 
     # Fetch Custom Design Tokens (AI extracted)
-    design_coll = db['design_systems']
-    design_doc = await design_coll.find_one({"org_id": org_id})
-    style_tokens = design_doc.get("tokens", {}) if design_doc else {}
+    from database import get_db
+    active_db = get_db()
+    
+    style_tokens = {
+        "layout": "modern",
+        "primary_color": "#ff5c00",
+        "font_family": "Inter, sans-serif"
+    }
+    if active_db is not None:
+        design_coll = active_db['design_systems']
+        try:
+            design_doc = await design_coll.find_one({"org_id": org_id})
+            if design_doc and design_doc.get("tokens"):
+                style_tokens = clean_data(design_doc["tokens"])
+        except Exception as e:
+            print(f"DEBUG: Design system fetch failed: {e}")
+    else:
+        print("CRITICAL: Database not initialized in PDF service!")
 
     env = Environment(loader=FileSystemLoader(templates_dir))
     template = env.get_template("invoice_pdf.html")

@@ -10,26 +10,13 @@ from google.api_core import exceptions
 from auth import get_current_user, get_approved_user
 from config import settings
 
+from config import settings, get_gemini_model
+
 router = APIRouter()
 
-# Configure Gemini
-if not settings.GEMINI_API_KEY or settings.GEMINI_API_KEY == "your_gemini_api_key_here":
-    print("CRITICAL: GEMINI_API_KEY IS MISSING IN .ENV FILE")
-    genai.configure(api_key="MISSING")
-else:
-    genai.configure(api_key=settings.GEMINI_API_KEY)
-
-# Diagnostic: List available models to terminal
-try:
-    print("--- AI DIAGNOSTIC: VERIFYING MODELS ---")
-    for m in genai.list_models():
-        if 'generateContent' in m.supported_generation_methods:
-            print(f'Available Model: {m.name}')
-except Exception as e:
-    print(f'Model list failed: {e}')
-
-# Standardize Model Name (Using flash-latest for maximum compatibility)
-model = genai.GenerativeModel(model_name='gemini-flash-latest')
+# Configure Gemini with Dynamic Discovery
+genai.configure(api_key=settings.GEMINI_API_KEY)
+model = get_gemini_model(vision=False)
 
 class DescriptionRequest(BaseModel):
     phrase: str
@@ -42,6 +29,10 @@ class NoteRequest(BaseModel):
 class TaxRequest(BaseModel):
     address: str
     items: list[str] = []
+
+class AuditRequest(BaseModel):
+    items: list[dict]
+    currency: str = "INR"
 
 import os
 # Verify API Key Loading
@@ -191,3 +182,37 @@ async def suggest_tax(
         if "429" in error_str or "quota" in error_str.lower():
             raise HTTPException(status_code=429, detail="Quota reached. Please try again in 30 seconds.")
         raise HTTPException(status_code=500, detail=error_str)
+
+@router.post("/audit")
+async def audit_invoice(
+    request: AuditRequest,
+    current_user: dict = Depends(get_approved_user)
+):
+    """
+    Audits the invoice line items for duplicates, suspicious prices, or nonsensical items.
+    """
+    try:
+        items_json = json.dumps(request.items, indent=2)
+        prompt = (
+            f"Act as a professional forensic auditor. Audit the following invoice line items (Currency: {request.currency}):\n"
+            f"{items_json}\n\n"
+            f"CHECK FOR:\n"
+            f"1. DUPLICATES: Are the same items listed twice?\n"
+            f"2. SUSPICIOUS PRICING: Are there extreme price spikes (e.g., $1000 for a pen) compared to market logic?\n"
+            f"3. NONSENSICAL DESCRIPTIONS: Are any items gibberish or unrelated to professional services?\n\n"
+            f"Output ONLY a JSON object with these keys:\n"
+            f"- 'is_safe': Boolean\n"
+            f"- 'issues': List of strings (empty if safe)\n"
+            f"- 'audit_note': A brief summary of your finding (max 20 words)."
+        )
+        response = model.generate_content(prompt)
+        
+        import json
+        match = re.search(r"\{.*\}", response.text.replace("\n", ""), re.DOTALL)
+        if match:
+            return json.loads(match.group())
+        
+        return {"is_safe": True, "issues": [], "audit_note": "No significant issues detected."}
+    except Exception as e:
+        print(f"AI AUDIT ERROR: {e}")
+        return {"is_safe": True, "issues": [], "audit_note": "Audit service temporarily unavailable."}

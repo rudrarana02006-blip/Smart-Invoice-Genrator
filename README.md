@@ -1,4 +1,4 @@
-# 🚀 Smart Invoice Engine
+# 🚀 Devleds Engine
 > **The future of intelligent billing. Powered by AI. Defined by Design.**
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
@@ -9,7 +9,7 @@
 ---
 
 ## ✨ Overview
-Smart Invoice Engine is a high-performance, design-centric billing platform. It goes beyond simple document generation by utilizing **AI Vision** to clone design aesthetics from any sample invoice, allowing for "Style DNA" extraction and automated professional branding.
+Devleds Engine is a high-performance, design-centric billing platform. It goes beyond simple document generation by utilizing **AI Vision** to clone design aesthetics from any sample invoice, allowing for "Style DNA" extraction and automated professional branding.
 
 ## 🌟 Key Features
 - **🧠 AI Style Cloning**: Upload a JPEG/PDF of any invoice. Our Gemini-powered engine analyzes the "Design DNA" (typography, spacing, color palettes) and replicates it for your business.
@@ -35,8 +35,8 @@ Smart Invoice Engine is a high-performance, design-centric billing platform. It 
 ### Installation
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/rudrarana02006-blip/Smart-Invoice-Genrator.git
-   cd Smart-Invoice-Genrator
+   git clone https://github.com/rudrarana02006-blip/Smart-Invoice-Generator.git
+   cd Smart-Invoice-Generator
    ```
 
 2. **Install Dependencies**
@@ -60,15 +60,4 @@ Smart Invoice Engine is a high-performance, design-centric billing platform. It 
 
 ---
 
-## 🎨 Design & Frontend Architecture
-> **Note: The frontend source code is currently kept in a private internal repository to protect proprietary design assets and original UI logic. This public repository focuses strictly on the Backend API and AI Engine.**
-
-The Smart Invoice Engine follows the **Nothing Tech × Apple** aesthetic—minimalist, high-contrast, and focused on micro-interactions. While the UI is private, the backend routes are fully documented here for integration purposes.
-
----
-
-### 🛡️ Privacy & Security
-This repository is a white-labeled public release. All personal credentials and branding are managed via environment variables to ensure zero data leakage.
-
----
-*Built with ❤️ for the future of fintech.*
+*Built with ❤️ by Devleds.*

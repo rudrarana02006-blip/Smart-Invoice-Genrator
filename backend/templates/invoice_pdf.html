@@ -53,12 +53,14 @@ body {
 /* Dynamic Layout Logic */
 .header {
     display: flex;
-    justify-content: {% if style.header_style == 'center' %}center{% else %}space-between{% endif %};
+    justify-content: {% if style.header_style == 'split' %}space-between{% elif style.header_style == 'center' %}center{% else %}flex-start{% endif %};
     text-align: {% if style.header_style == 'center' %}center{% else %}left{% endif %};
     align-items: flex-start;
     padding-bottom: 8mm;
-    border-bottom: 1pt solid var(--primary);
+    border-bottom: {% if style.header_style == 'split' %}none{% else %}1pt solid var(--primary){% endif %};
     margin-bottom: 8mm;
+    position: relative;
+    z-index: 10;
 }
 
 .top-strip {
@@ -91,6 +93,7 @@ table.items thead th {
 
 /* ── AI GENERATED CSS OVERRIDES ────────────────────────── */
 {% if style.css_override %}
+/* INJECTED BY AI DESIGN CLONER */
 {{ style.css_override | safe }}
 {% endif %}
 
@@ -99,7 +102,23 @@ table.items thead th {
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 4mm;
-    background: #111111;
+    background: var(--primary);
+    z-index: 1;
+}
+
+.bottom-strip {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 6mm;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 7pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
 }
 
 /* ── HEADER ────────────────────────────────────────────── */
@@ -109,13 +128,13 @@ table.items thead th {
     font-size: 22pt;
     font-weight: 900;
     letter-spacing: -0.5pt;
-    color: #111111;
+    color: var(--primary);
     line-height: 1;
     font-style: italic;
 }
 
 .brand-block .brand-name .dot {
-    color: #FF5722;
+    color: {% if style.layout == 'classic' %}transparent{% else %}var(--orange){% endif %};
 }
 
 .brand-block .brand-tagline {
@@ -135,7 +154,7 @@ table.items thead th {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 3pt;
-    color: #111111;
+    color: var(--primary);
     line-height: 1;
 }
 
@@ -151,17 +170,17 @@ table.items thead th {
     display: inline-block;
     margin-top: 3mm;
     padding: 1mm 4mm;
-    border: 0.5pt solid #111111;
+    border: 0.5pt solid var(--primary);
     font-size: 7pt;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5pt;
-    color: #111111;
+    color: var(--primary);
 }
 
 .invoice-block .inv-status.paid {
-    border-color: #FF5722;
-    color: #FF5722;
+    border-color: var(--orange);
+    color: var(--orange);
 }
 
 /* ── PARTIES GRID (Bill From / Bill To) ────────────────── */
@@ -174,8 +193,9 @@ table.items thead th {
 .party-block {
     flex: 1;
     padding: 5mm;
-    border: 0.5pt solid #cccccc;
-    border-top: 2pt solid #111111;
+    border: {% if style.hide_borders %}none{% else %}0.5pt solid #cccccc{% endif %};
+    border-top: {% if style.hide_borders %}none{% else %}2pt solid var(--primary){% endif %};
+    border-radius: var(--radius);
 }
 
 .party-label {
@@ -193,7 +213,7 @@ table.items thead th {
 .party-label .dot-ind {
     width: 4pt;
     height: 4pt;
-    background: #FF5722;
+    background: {% if style.layout == 'classic' %}transparent{% else %}var(--orange){% endif %};
     border-radius: 50%;
     display: inline-block;
     flex-shrink: 0;
@@ -202,7 +222,7 @@ table.items thead th {
 .party-name {
     font-size: 11pt;
     font-weight: 800;
-    color: #111111;
+    color: var(--primary);
     margin-bottom: 2mm;
     letter-spacing: -0.2pt;
 }
@@ -226,7 +246,7 @@ table.items thead th {
     display: flex;
     gap: 0;
     margin-bottom: 8mm;
-    border: 0.5pt solid #cccccc;
+    border: {% if style.hide_borders %}none{% else %}0.5pt solid #cccccc{% endif %};
     overflow: hidden;
 }
 
@@ -278,15 +298,16 @@ table.items thead th {
     letter-spacing: 1.5pt;
     font-weight: 700;
     color: #ffffff;
-    background: #111111;
+    background: var(--primary);
     padding: 3mm 3mm;
     text-align: left;
+    border-radius: var(--radius) var(--radius) 0 0;
 }
 
 table.items thead th.r { text-align: right; }
 
 table.items tbody tr:nth-child(even) td {
-    background: #f7f7f7;
+    background: {% if style.layout == 'classic' %}transparent{% else %}#f7f7f7{% endif %};
 }
 
 table.items tbody td {
@@ -323,9 +344,10 @@ table.items tfoot td {
 /* Bank details */
 .bank-block {
     flex: 1;
-    border: 0.5pt solid #cccccc;
-    border-top: 2pt solid #111111;
+    border: {% if style.hide_borders %}none{% else %}0.5pt solid #cccccc{% endif %};
+    border-top: {% if style.hide_borders %}none{% else %}2pt solid var(--primary){% endif %};
     padding: 4mm;
+    border-radius: var(--radius);
 }
 
 .bank-title {
@@ -391,22 +413,23 @@ table.items tfoot td {
     display: flex;
     justify-content: space-between;
     padding: 4mm 3mm;
-    background: #111111;
+    background: var(--primary);
     color: #ffffff;
     font-size: 11pt;
     font-weight: 900;
     letter-spacing: -0.3pt;
     margin-top: 1mm;
+    border-radius: 0 0 var(--radius) var(--radius);
 }
 
 .summary-total .total-amount {
-    color: #FF5722;
+    color: var(--orange);
     font-size: 12pt;
 }
 
 /* ── NOTES ─────────────────────────────────────────────── */
 .notes-block {
-    border: 0.5pt solid #cccccc;
+    border: {% if style.hide_borders %}none{% else %}0.5pt solid #cccccc{% endif %};
     padding: 3mm 4mm;
     margin-bottom: 6mm;
     font-size: 8pt;
@@ -474,15 +497,191 @@ table.items tfoot td {
 .dot-ind {
     width: 4pt;
     height: 4pt;
-    background: #FF5722;
+    background: {% if style.layout == 'classic' %}transparent{% else %}var(--orange){% endif %};
     border-radius: 50%;
     display: inline-block;
 }
 
 </style>
 </head>
-<body>
+<body class="{% if style.layout == 'classic' %}classic-mode{% endif %}">
 
+<style>
+/* ── CLASSIC MODE OVERRIDES ────────────────────────────── */
+.classic-mode {
+    font-family: "Times New Roman", serif;
+}
+
+.classic-mode .top-strip, 
+.classic-mode .bottom-strip,
+.classic-mode .dot-ind {
+    display: none !important;
+}
+
+.classic-mode table.items {
+    border: 1pt solid #000;
+}
+
+.classic-mode table.items thead th {
+    background: transparent !important;
+    color: #000 !important;
+    border: 1pt solid #000;
+}
+
+.classic-mode table.items tbody td {
+    border: 1pt solid #000;
+}
+
+.classic-mode .glass-panel,
+.classic-mode .party-block,
+.classic-mode .bank-block,
+.classic-mode .date-strip {
+    border: 1pt solid #000 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+
+.classic-mode .brand-name {
+    font-style: normal !important;
+    text-align: center;
+    width: 100%;
+}
+
+.classic-mode .header {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    border-bottom: 2pt solid #000 !important;
+}
+</style>
+
+{% if style.layout == 'classic' %}
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- ═══ CLASSIC TABULAR LAYOUT (Formal Tax Invoice) ═══ -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="classic-wrapper" style="border: 1pt solid #000; padding: 2mm;">
+    <!-- Centered Header -->
+    <div style="text-align: center; border-bottom: 1pt solid #000; padding-bottom: 5mm; margin-bottom: 5mm;">
+        <div style="font-size: 10pt; text-align: left;">GSTIN: {{ company.gstin }}<br>PAN: {{ company.pan }}</div>
+        <div style="font-size: 10pt; position: absolute; right: 2mm; top: 2mm;">Original Copy</div>
+        
+        <div style="font-size: 11pt; margin-top: 2mm;">TAX INVOICE</div>
+        <div style="font-size: 24pt; font-weight: 700; margin: 4mm 0;">{{ company.name | upper }}</div>
+        <div style="font-size: 10pt; line-height: 1.4;">{{ company.address }}</div>
+    </div>
+
+    <!-- Info Grid -->
+    <table style="width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 5mm;">
+        <tr>
+            <td style="width: 50%; border: 1pt solid #000; padding: 2mm; vertical-align: top;">
+                <table style="width: 100%;">
+                    <tr><td style="width: 40%;">Invoice No.</td><td>: {{ invoice['invoice_number'] }}</td></tr>
+                    <tr><td>Date of Invoice</td><td>: 
+                        {% if invoice['created_at'] is string %}{{ invoice['created_at'][:10] }}{% else %}{{ invoice['created_at'].strftime('%d-%m-%Y') }}{% endif %}
+                    </td></tr>
+                    <tr><td>Place of Supply</td><td>: {{ invoice['client_country'] }}</td></tr>
+                </table>
+            </td>
+            <td style="width: 50%; border: 1pt solid #000; padding: 2mm; vertical-align: top;">
+                <table style="width: 100%;">
+                    <tr><td style="width: 40%;">Vehicle No.</td><td>: </td></tr>
+                    <tr><td>Station</td><td>: </td></tr>
+                    <tr><td>E-Way Bill No.</td><td>: </td></tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style="border: 1pt solid #000; padding: 2mm; vertical-align: top;">
+                <div style="font-weight: 700; text-decoration: underline; margin-bottom: 2mm;">Billed to:</div>
+                <div style="font-weight: 700;">{{ invoice['client_name'] }}</div>
+                <div>{{ invoice['client_address'] }}</div>
+                <div style="margin-top: 2mm;">GSTIN: {{ invoice['client_gstin'] or '' }}</div>
+            </td>
+            <td style="border: 1pt solid #000; padding: 2mm; vertical-align: top;">
+                <div style="font-weight: 700; text-decoration: underline; margin-bottom: 2mm;">Shipped to:</div>
+                <div style="font-weight: 700;">{{ invoice['client_name'] }}</div>
+                <div>{{ invoice['client_address'] }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Main Items Table -->
+    <table class="items" style="width: 100%; border-collapse: collapse; border: 1pt solid #000; font-size: 9pt;">
+        <thead>
+            <tr>
+                <th style="border: 1pt solid #000; padding: 2mm; width: 5%;">S.No.</th>
+                <th style="border: 1pt solid #000; padding: 2mm; width: 45%;">Description of Goods</th>
+                <th style="border: 1pt solid #000; padding: 2mm; width: 10%;">HSN</th>
+                <th style="border: 1pt solid #000; padding: 2mm; width: 10%;">Qty</th>
+                <th style="border: 1pt solid #000; padding: 2mm; width: 10%;">Unit</th>
+                <th style="border: 1pt solid #000; padding: 2mm; width: 10%;">Price</th>
+                <th style="border: 1pt solid #000; padding: 2mm; width: 10%;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in invoice['items'] %}
+            <tr>
+                <td style="border: 1pt solid #000; padding: 2mm; text-align: center;">{{ loop.index }}</td>
+                <td style="border: 1pt solid #000; padding: 2mm;">{{ item.description }}</td>
+                <td style="border: 1pt solid #000; padding: 2mm; text-align: center;"></td>
+                <td style="border: 1pt solid #000; padding: 2mm; text-align: center;">{{ item.quantity }}</td>
+                <td style="border: 1pt solid #000; padding: 2mm; text-align: center;">{{ item.unit }}</td>
+                <td style="border: 1pt solid #000; padding: 2mm; text-align: right;">{{ item.rate }}</td>
+                <td style="border: 1pt solid #000; padding: 2mm; text-align: right;">{{ item.amount }}</td>
+            </tr>
+            {% endfor %}
+            <!-- Spacer rows -->
+            {% for i in range(5) %}
+            <tr style="height: 15mm;">
+                <td style="border: 1pt solid #000;"></td><td style="border: 1pt solid #000;"></td><td style="border: 1pt solid #000;"></td><td style="border: 1pt solid #000;"></td><td style="border: 1pt solid #000;"></td><td style="border: 1pt solid #000;"></td><td style="border: 1pt solid #000;"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6" style="border: 1pt solid #000; padding: 2mm; text-align: right; font-weight: 700;">TOTAL</td>
+                <td style="border: 1pt solid #000; padding: 2mm; text-align: right; font-weight: 700;">{{ invoice['subtotal'] }}</td>
+            </tr>
+            <tr>
+                <td colspan="6" style="border: 1pt solid #000; padding: 2mm; text-align: right;">CGST ({{ invoice['cgst_rate'] }}%)</td>
+                <td style="border: 1pt solid #000; padding: 2mm; text-align: right;">{{ invoice['cgst_amount'] }}</td>
+            </tr>
+            <tr>
+                <td colspan="6" style="border: 1pt solid #000; padding: 2mm; text-align: right;">SGST ({{ invoice['sgst_rate'] }}%)</td>
+                <td style="border: 1pt solid #000; padding: 2mm; text-align: right;">{{ invoice['sgst_amount'] }}</td>
+            </tr>
+            <tr style="background: #f0f0f0;">
+                <td colspan="6" style="border: 1pt solid #000; padding: 2mm; text-align: right; font-weight: 700;">GRAND TOTAL</td>
+                <td style="border: 1pt solid #000; padding: 2mm; text-align: right; font-weight: 700;">{{ invoice['grand_total'] }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Footer Area -->
+    <div style="display: flex; border: 1pt solid #000; margin-top: 5mm; font-size: 9pt;">
+        <div style="width: 60%; border-right: 1pt solid #000; padding: 2mm;">
+            <div style="font-weight: 700; text-decoration: underline;">Bank Details:</div>
+            <div>Bank: {{ company.bank_name }}</div>
+            <div>A/C No: {{ company.bank_account }}</div>
+            <div>IFSC: {{ company.bank_ifsc }}</div>
+            <div style="margin-top: 4mm; font-size: 8pt;">
+                <strong>Terms & Conditions:</strong><br>
+                1. Goods once sold will not be taken back.<br>
+                2. Subject to local jurisdiction only.<br>
+                <span style="font-size: 7pt; color: #666; font-style: italic;">Note: This document is an AI-powered design-clone based on your provided reference for visual consistency and is not an exact replica.</span>
+            </div>
+        </div>
+        <div style="width: 40%; display: flex; flex-direction: column; justify-content: space-between; padding: 2mm; text-align: center;">
+            <div style="font-size: 9pt;">For <strong>{{ company.name | upper }}</strong></div>
+            <div style="margin-top: 15mm; border-top: 1pt solid #ccc; padding-top: 2mm;">Authorised Signatory</div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- ═══ MODERN INDUSTRIAL LAYOUT (Default / Nothing) ═══ -->
+<!-- ════════════════════════════════════════════════════════ -->
 <div class="top-strip"></div>
 
 <!-- ═══ HEADER ══════════════════════════════════════════ -->
@@ -662,7 +861,8 @@ table.items tfoot td {
 <div class="declaration">
     This is a computer-generated invoice and does not require a physical signature. |
     Subject to {{ company.address.split(',')[-1].strip() }} jurisdiction. |
-    GSTIN: {{ company.gstin }}
+    GSTIN: {{ company.gstin }}<br>
+    <span style="font-size: 7.5pt; opacity: 0.7;">Note: This document is a design-clone based on your provided reference for brand continuity and is not an exact replica.</span>
 </div>
 
 <!-- ═══ FOOTER ═══════════════════════════════════════════ -->
@@ -678,5 +878,9 @@ table.items tfoot td {
     </div>
 </div>
 
+<div class="bottom-strip">
+    Thank you for your business!
+</div>
+{% endif %}
 </body>
 </html>

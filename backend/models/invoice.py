@@ -15,6 +15,7 @@ class InvoiceStatus(str, Enum):
     PAID = "paid"
     PENDING = "pending"
     OVERDUE = "overdue"
+    TEMPLATE = "template"
 
 
 class Currency(str, Enum):
@@ -27,6 +28,12 @@ class Currency(str, Enum):
     AUD = "AUD"
     JPY = "JPY"
     SGD = "SGD"
+
+class RecurrenceInterval(str, Enum):
+    NONE = "none"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
 
 
 class LineItem(BaseModel):
@@ -55,6 +62,14 @@ class InvoiceBase(BaseModel):
     # Selected Bank Details
     selected_bank: Optional[BankAccount] = None
 
+    # Tracking Flags
+    is_sent: bool = Field(default=False)
+    is_paid: bool = Field(default=False)
+    
+    # Recurring/Template Support
+    is_template: bool = Field(default=False)
+    recurrence: RecurrenceInterval = RecurrenceInterval.NONE
+
 
 class InvoiceCreate(InvoiceBase):
     items: List[LineItem]
@@ -64,6 +79,8 @@ class InvoiceCreate(InvoiceBase):
 class InvoiceUpdate(InvoiceBase):
     items: Optional[List[LineItem]] = None
     status: Optional[InvoiceStatus] = None
+    is_sent: Optional[bool] = None
+    is_paid: Optional[bool] = None
 
 
 class InvoiceStatusUpdate(BaseModel):
@@ -90,6 +107,11 @@ class InvoiceInDB(InvoiceCreate):
     
     created_at: datetime
     updated_at: datetime
+    
+    is_template: bool = False
+    recurrence: RecurrenceInterval = RecurrenceInterval.NONE
+    is_sent: bool = False
+    is_paid: bool = False
 
     class Config:
         populate_by_name = True

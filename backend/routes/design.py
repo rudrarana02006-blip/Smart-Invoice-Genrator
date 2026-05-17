@@ -5,14 +5,16 @@ import json
 import re
 from datetime import datetime, timezone
 from auth import get_approved_user
-from database import db
+from database import get_db
 from config import settings
+
+from config import settings, get_gemini_model
 
 router = APIRouter()
 
-# Configure Gemini 2.0 Flash for High-Speed Vision
+# Configure Gemini with Dynamic Discovery for Vision
 genai.configure(api_key=settings.GEMINI_API_KEY)
-vision_model = genai.GenerativeModel(model_name='models/gemini-2.0-flash')
+vision_model = get_gemini_model(vision=True)
 
 @router.post("/analyze")
 async def analyze_sample_format(
@@ -27,33 +29,42 @@ async def analyze_sample_format(
         raise HTTPException(status_code=401, detail="Session expired.")
         
     # Permission Check
-    is_admin = current_user.get("role") == "admin"
+    role_str = str(current_user.get("role", "")).lower()
+    is_admin = role_str == "admin"
     org_id = current_user.get("org_id")
+    
+    print(f"[DEBUG] Design upload attempt by: {current_user.get('email')} | Role: {role_str} | OrgID: {org_id}")
     
     if not org_id:
         raise HTTPException(status_code=400, detail="Organization ID missing from profile.")
         
-    is_independent = org_id == str(current_user.get("_id", ""))
+    is_independent = str(org_id) == str(current_user.get("_id", ""))
     
     if not (is_admin or is_independent):
+        print(f"[DEBUG] Permission Denied: is_admin={is_admin}, is_independent={is_independent}")
         raise HTTPException(status_code=403, detail="Only Admins or Independent users can set custom formats.")
 
     try:
         content = await file.read()
         
-        # 1. AI Vision Prompt for Pixel-Perfect Cloning
+        # 1. AI Vision Prompt for High-Fidelity Cloning
         prompt = (
-            "Analyze this invoice sample image with extreme precision. Your goal is to CLONE its visual identity. "
-            "Extract the following tokens as a JSON object: "
-            "1. 'primary_color': Hex code of the main brand color. "
-            "2. 'font_family': Name of the closest web-safe font or Google Font. "
-            "3. 'header_style': ['left', 'center', 'split']. "
-            "4. 'css_override': A string containing custom CSS rules to make our template match this sample. "
-            "   Focus on: .brand-name font-size, .top-strip height, .party-block border styles, and .items thead background. "
-            "   IMPORTANT: Use high-precision CSS selectors to override the default styles. "
-            "5. 'accent_bg': A very light version of the primary color for backgrounds. "
-            "6. 'border_radius': The exact roundness of boxes (e.g. '4px', '12px'). "
-            "\nOutput ONLY the JSON object."
+            "You are a Senior UI/UX Architect specializing in pixel-perfect invoice replication. "
+            "Analyze the attached invoice sample. Your mission is to CLONE its structure exactly. "
+            "\n\nCRITICAL ARCHITECTURAL DECISION:"
+            "\n- If the sample is a formal, traditional tax invoice with a centered header, tabular grid lines throughout, and NO modern boxes or glass elements, SET 'layout': 'classic'."
+            "\n- Otherwise, for modern or industrial designs, SET 'layout': 'modern'."
+            "\n\nEXTRACT THESE TOKENS:"
+            "\n1. 'primary_color': Brand hex code."
+            "\n2. 'font_family': EXACT font or family (e.g. 'Times New Roman', 'Inter')."
+            "\n3. 'layout': 'modern' or 'classic'."
+            "\n4. 'hide_borders': Boolean."
+            "\n5. 'css_override': NUCLEAR OVERRIDE. Use this to destroy our default aesthetic if it doesn't match."
+            "\n   - HIDE EVERYTHING NOT IN SAMPLE: .dot-ind, .top-strip, .bottom-strip, .glass-panel { display: none !important; }"
+            "\n   - ALIGNMENT: If header is centered, use .header { justify-content: center !important; text-align: center; }"
+            "\n   - GRIDS: If sample has heavy black grid lines, use: table.items td, table.items th { border: 1pt solid #000 !important; }"
+            "\n   - TYPOGRAPHY: Force font-weight and letter-spacing to match."
+            "\n\nOutput ONLY a valid JSON object. DO NOT BE POLITE. BE AGGRESSIVE. CLONE IT."
         )
         
         response = vision_model.generate_content([
@@ -69,7 +80,7 @@ async def analyze_sample_format(
         design_tokens = json.loads(match.group())
         
         # 3. Store in Database
-        design_coll = db['design_systems']
+        design_coll = get_db()['design_systems']
         await design_coll.update_one(
             {"org_id": org_id},
             {"$set": {
@@ -102,7 +113,7 @@ async def get_active_design(current_user: dict = Depends(get_approved_user)):
         if not org_id:
             return {"status": "default", "tokens": None}
             
-        design_coll = db['design_systems']
+        design_coll = get_db()['design_systems']
         design = await design_coll.find_one({"org_id": org_id})
         
         if not design or "tokens" not in design:
@@ -118,6 +129,6 @@ async def get_active_design(current_user: dict = Depends(get_approved_user)):
 async def reset_to_default(current_user: dict = Depends(get_approved_user)):
     """Resets the organization to the default invoice format."""
     org_id = current_user.get("org_id")
-    design_coll = db['design_systems']
+    design_coll = get_db()['design_systems']
     await design_coll.delete_one({"org_id": org_id})
     return {"message": "Reset to default format successfully."}

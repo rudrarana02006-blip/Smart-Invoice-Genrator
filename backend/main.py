@@ -82,6 +82,7 @@ from routes.org import router as org_router
 from routes.clients import router as clients_router
 from routes.analytics import router as analytics_router
 from routes.design import router as design_router
+from routes.utils import router as utils_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -139,6 +140,7 @@ app.include_router(org_router, prefix="/api/org", tags=["Organization Management
 app.include_router(clients_router, prefix="/api/clients", tags=["Clients"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
 app.include_router(design_router, prefix="/api/design", tags=["Design Engine"])
+app.include_router(utils_router, prefix="/api/utils", tags=["Utilities"])
 
 # Print registered routes for debugging
 @app.on_event("startup")
@@ -197,6 +199,14 @@ async def serve_org():
 @app.get("/clients")
 async def serve_clients():
     return FileResponse(os.path.join(FRONTEND_DIR, "clients.html"))
+
+# Favicon
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    favicon_path = os.path.join(FRONTEND_DIR, "assets", "icons", "favicon.png")
+    if os.path.exists(favicon_path):
+        return FileResponse(favicon_path)
+    return None
 
 # Dashboard is the root
 @app.get("/")

@@ -64,4 +64,7 @@ async def delete_existing_invoice(invoice_id: str, current_user: dict = Depends(
     success = await invoice_service.delete_invoice(invoice_id, current_user)
     if not success:
         raise HTTPException(status_code=404, detail="Invoice not found or access denied")
-    return None
+@router.post("/{invoice_id}/clone")
+async def clone_existing_invoice(invoice_id: str, current_user: dict = Depends(get_approved_user)):
+    """Clone an invoice to create a new draft."""
+    return await invoice_service.clone_invoice(invoice_id, current_user)

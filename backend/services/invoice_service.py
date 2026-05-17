@@ -5,6 +5,8 @@ Handles auto-calculation of subtotals, CGST, SGST, and totals.
 
 from datetime import datetime, timezone
 from bson import ObjectId
+from fastapi import HTTPException
+from pymongo.errors import DuplicateKeyError
 
 from database import get_invoice_collection
 from models.invoice import InvoiceCreate, InvoiceUpdate, InvoiceStatus, InvoiceInDB
@@ -27,18 +29,22 @@ def calculate_invoice_totals(invoice_data: dict) -> dict:
     invoice_data['subtotal'] = subtotal
     
     # Calculate taxes based on subtotal
-    cgst_rate = invoice_data.get('cgst_rate', 0)
-    sgst_rate = invoice_data.get('sgst_rate', 0)
+    tax_1_rate = invoice_data.get('tax_1_rate', invoice_data.get('cgst_rate', 0))
+    tax_2_rate = invoice_data.get('tax_2_rate', invoice_data.get('sgst_rate', 0))
     
-    cgst_amount = round(subtotal * (cgst_rate / 100), 2)
-    sgst_amount = round(subtotal * (sgst_rate / 100), 2)
+    tax_1_amount = round(subtotal * (tax_1_rate / 100), 2)
+    tax_2_amount = round(subtotal * (tax_2_rate / 100), 2)
     
-    total_tax = round(cgst_amount + sgst_amount, 2)
+    total_tax = round(tax_1_amount + tax_2_amount, 2)
     
-    invoice_data['cgst_amount'] = cgst_amount
-    invoice_data['sgst_amount'] = sgst_amount
+    invoice_data['tax_1_amount'] = tax_1_amount
+    invoice_data['tax_2_amount'] = tax_2_amount
     invoice_data['total_tax'] = total_tax
     invoice_data['grand_total'] = round(subtotal + total_tax, 2)
+    
+    # Backwards compatibility/Duplicate for safety
+    invoice_data['cgst_amount'] = tax_1_amount
+    invoice_data['sgst_amount'] = tax_2_amount
     
     return invoice_data
 
@@ -70,12 +76,34 @@ async def create_invoice(invoice: InvoiceCreate, current_user: dict) -> dict:
     
     invoice_dict["org_id"] = org_id
     invoice_dict["created_by"] = user_email
-    invoice_dict["status"] = InvoiceStatus.DRAFT.value
+    
+    # Sync status flags
+    initial_status = invoice_dict.get("status", InvoiceStatus.DRAFT.value)
+    invoice_dict["status"] = initial_status
+    invoice_dict["is_sent"] = (initial_status == InvoiceStatus.SENT.value or initial_status == InvoiceStatus.PAID.value)
+    invoice_dict["is_paid"] = (initial_status == InvoiceStatus.PAID.value)
+    
     invoice_dict["created_at"] = datetime.now(timezone.utc)
     invoice_dict["updated_at"] = invoice_dict["created_at"]
     
-    result = await invoices.insert_one(invoice_dict)
-    invoice_dict["_id"] = str(result.inserted_id)
+    try:
+        result = await invoices.insert_one(invoice_dict)
+        invoice_dict["_id"] = str(result.inserted_id)
+    except DuplicateKeyError:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invoice number '{invoice_dict['invoice_number']}' already exists. Please use a unique number."
+        )
+    
+    # Auto-save client to directory
+    from services.client_service import ensure_client_exists
+    await ensure_client_exists(
+        invoice_dict.get("client_name"),
+        invoice_dict.get("client_email"),
+        invoice_dict.get("client_address"),
+        current_user
+    )
+    
     return invoice_dict
 
 async def get_all_invoices(current_user: dict, skip: int = 0, limit: int = 50, search: str = None, location: str = None, user_id: str = None) -> list:
@@ -154,6 +182,17 @@ async def update_invoice(invoice_id: str, current_user: dict, update_data: Invoi
         if 'items' in update_dict:
              update_dict['items'] = merged_data['items']
              
+    # Handle status-to-flags mapping for legacy/convenience updates
+    if "status" in update_dict:
+        s = update_dict["status"]
+        if s == InvoiceStatus.PAID.value:
+            update_dict["is_paid"] = True
+        elif s == InvoiceStatus.SENT.value:
+            update_dict["is_sent"] = True
+        elif s == InvoiceStatus.DRAFT.value:
+            update_dict["is_sent"] = False
+            update_dict["is_paid"] = False
+
     update_dict["updated_at"] = datetime.now(timezone.utc)
     
     await invoices.update_one(query, {"$set": update_dict})
@@ -177,9 +216,9 @@ async def get_dashboard_stats(current_user: dict) -> dict:
     
     from models.user import UserRole
     if current_user.get("role") == UserRole.ADMIN:
-        match_query = {"org_id": org_id}
+        match_query = {"org_id": org_id, "is_template": False} # Exclude templates from stats
     else:
-        match_query = {"org_id": org_id, "created_by": current_user["email"]}
+        match_query = {"org_id": org_id, "created_by": current_user["email"], "is_template": False}
         
     pipeline = [
         {"$match": match_query},
@@ -189,14 +228,19 @@ async def get_dashboard_stats(current_user: dict) -> dict:
                 "total_invoices": {"$sum": 1},
                 "total_revenue": {
                     "$sum": {
-                        "$cond": [{"$eq": ["$status", "paid"]}, "$grand_total", 0]
+                        "$cond": [{"$eq": ["$is_paid", True]}, "$grand_total", 0]
                     }
                 },
                 "pending_amount": {
                     "$sum": {
-                        "$cond": [{"$in": ["$status", ["sent", "overdue"]]}, "$grand_total", 0]
+                        "$cond": [{"$and": [{"$eq": ["$is_paid", False]}, {"$eq": ["$is_sent", True]}]}, "$grand_total", 0]
                     }
-                }
+                },
+                # For the Pie Chart specifically
+                "count_draft": {"$sum": {"$cond": [{"$and": [{"$eq": ["$is_sent", False]}, {"$eq": ["$is_paid", False]}]}, 1, 0]}},
+                "count_sent_unpaid": {"$sum": {"$cond": [{"$and": [{"$eq": ["$is_sent", True]}, {"$eq": ["$is_paid", False]}]}, 1, 0]}},
+                "count_paid_unsent": {"$sum": {"$cond": [{"$and": [{"$eq": ["$is_sent", False]}, {"$eq": ["$is_paid", True]}]}, 1, 0]}},
+                "count_completed": {"$sum": {"$cond": [{"$and": [{"$eq": ["$is_sent", True]}, {"$eq": ["$is_paid", True]}]}, 1, 0]}}
             }
         }
     ]
@@ -205,4 +249,30 @@ async def get_dashboard_stats(current_user: dict) -> dict:
         stats = result[0]
         stats.pop('_id', None)
         return stats
-    return {"total_invoices": 0, "total_revenue": 0, "pending_amount": 0}
+    return {
+        "total_invoices": 0, "total_revenue": 0, "pending_amount": 0,
+        "count_draft": 0, "count_sent_unpaid": 0, "count_paid_unsent": 0, "count_completed": 0
+    }
+async def clone_invoice(invoice_id: str, current_user: dict) -> dict:
+    """
+    Creates a copy of an existing invoice. 
+    Resets status to 'draft', clears the invoice number for auto-generation, 
+    and sets a fresh created_at timestamp.
+    """
+    existing = await get_invoice(invoice_id, current_user)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Original invoice not found")
+        
+    # Prepare data for new invoice
+    # Remove DB specific fields
+    for field in ["_id", "id", "created_at", "updated_at", "last_sent"]:
+        existing.pop(field, None)
+        
+    # Reset status and clear invoice number to trigger auto-generation
+    existing["status"] = InvoiceStatus.DRAFT.value
+    existing["invoice_number"] = "" 
+    
+    # Use create_invoice to handle DB insertion and numbering
+    from models.invoice import InvoiceCreate
+    new_invoice_obj = InvoiceCreate(**existing)
+    return await create_invoice(new_invoice_obj, current_user)
