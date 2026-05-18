@@ -13,7 +13,9 @@ from auth import create_access_token
 async def test():
     await connect_to_mongo()
     users = get_user_collection()
-    user = await users.find_one({"email": "rudrarana02006@gmail.com"})
+    user = await users.find_one({"role": "admin"})
+    if not user:
+        user = {"email": "admin@devleds.com", "token_version": 1, "role": "admin"}
     
     # Generate token
     token = create_access_token(

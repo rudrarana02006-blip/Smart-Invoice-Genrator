@@ -11,7 +11,9 @@ from database import get_user_collection, connect_to_mongo, close_mongo_connecti
 async def check():
     await connect_to_mongo()
     users = get_user_collection()
-    current_user = await users.find_one({"email": "rudrarana02006@gmail.com"})
+    current_user = await users.find_one({"role": "admin"})
+    if not current_user:
+        current_user = {"email": "admin@devleds.com", "role": "admin", "org_id": "6a02f0695760fb27f089ff0b"}
     
     current_user["_id"] = str(current_user["_id"])
     

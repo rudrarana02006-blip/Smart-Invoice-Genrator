@@ -12,11 +12,9 @@ async def inspect_db():
     
     client = AsyncIOMotorClient(uri)
     db = client[db_name]
-    
-    admin_email = "apnekaamsemtlbrkh@gmail.com"
-    user = await db["users"].find_one({"email": admin_email})
+    user = await db["users"].find_one({"role": "admin"})
     if not user:
-        print(f"User {admin_email} not found")
+        print("Admin user not found in database")
         return
     
     org_id = user.get("org_id")

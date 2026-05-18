@@ -58,8 +58,8 @@ Devleds Engine is a high-performance, design-centric billing platform. It goes b
 ### Installation
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/rudrarana02006-blip/Smart-Invoice-Generator.git
-   cd Smart-Invoice-Generator
+   git clone https://github.com/devleds-prod/smart-invoice-generator.git
+   cd smart-invoice-generator
    ```
 
 2. **Install Dependencies**

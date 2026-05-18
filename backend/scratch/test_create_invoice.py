@@ -15,7 +15,7 @@ load_dotenv()
 async def test_create():
     # Mock current_user
     current_user = {
-        "email": "apnekaamsemtlbrkh@gmail.com",
+        "email": "admin@devleds.com",
         "org_id": "6a02f0695760fb27f089ff0b",
         "role": "admin",
         "status": "approved"
