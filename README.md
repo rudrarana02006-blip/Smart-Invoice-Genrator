@@ -107,12 +107,14 @@ Welcome to the **Devleds Engine** user manual. Below is a detailed, feature-by-f
    ```
 
 3. **Configure Environment**
-   Create a `.env` file in the root directory:
-   ```env
-   MONGODB_URI=your_mongodb_uri
-   GEMINI_API_KEY=your_google_ai_key
-   ADMIN_EMAIL=your_admin_email
+   Copy the `.env.example` template to `.env`:
+   ```bash
+   cp .env.example .env
    ```
+   Open the newly created `.env` file and fill in your custom credentials:
+   - **MONGODB_URI**: Your MongoDB database connection string.
+   - **GEMINI_API_KEY**: Your API key from Google AI Studio.
+   - **MAIL_USERNAME & MAIL_PASSWORD**: Your SMTP email address and 16-character App Password (if using Gmail) to enable the system to send automated OTPs to your users.
 
 4. **Run the Server**
    ```bash
