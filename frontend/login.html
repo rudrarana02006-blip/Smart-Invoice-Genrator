@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Smart Invoice Generator</title>
+    <script>
+        (function() {
+          // Theme check
+          const theme = localStorage.getItem('theme');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+          } else {
+            document.documentElement.classList.remove('dark-mode');
+          }
+          
+          // Auth check - If already logged in, skip login page
+          const token = sessionStorage.getItem('token');
+          if (token) {
+            window.location.href = '/';
+          }
+        })();
+    </script>
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/login.css" rel="stylesheet">
+</head>
+<body>
+    <div class="ambient-background"></div>
+    <div style="position: absolute; top: 24px; right: 24px; z-index: 100;">
+        <button id="themeToggle" class="btn btn-secondary" style="padding: 8px 16px; font-size: 12px; border-radius: 4px;">🌙 Dark</button>
+    </div>
+
+    <div class="login-wrapper">
+        <div class="login-card glass-panel hover-specular">
+            <div class="login-logo text-gradient" style="color: var(--text-primary); -webkit-text-fill-color: var(--text-primary);">Smart Invoice<span class="dot" style="color: var(--accent-orange);">.</span></div>
+            <div class="login-subtitle">Smart Invoice System</div>
+            
+            <!-- Portal Selection (Top-most) -->
+            <div class="portal-selector" style="margin-bottom: 12px;">
+                <button type="button" id="portal-admin" class="btn-portal active">Admin Portal</button>
+                <button type="button" id="portal-user" class="btn-portal">User Portal</button>
+            </div>
+
+            <!-- Auth Mode Toggle (Sub-navigation) -->
+            <div class="auth-mode-toggle">
+                <button type="button" id="toggle-signin" class="btn-mode active">SIGN IN</button>
+                <button type="button" id="toggle-signup" class="btn-mode">SIGN UP</button>
+            </div>
+
+            <!-- Step 1: Email Entry -->
+            <div id="step-email" class="auth-step">
+                <!-- Registration Fields (Visible only in Signup Mode) -->
+                <div id="registration-fields-container" style="display: none; margin-bottom: 24px;">
+                    <!-- Admin Registration Fields -->
+                    <div id="admin-registration-fields" style="animation: fadeIn 0.3s;">
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" id="company-name-input" class="form-control" placeholder="Smart Invoice Inc.">
+                        </div>
+                        <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div class="form-group">
+                                <label>GSTIN</label>
+                                <input type="text" id="gstin-input" class="form-control" placeholder="22AAAAA0000A1Z5">
+                            </div>
+                            <div class="form-group">
+                                <label>PAN</label>
+                                <input type="text" id="pan-input" class="form-control" placeholder="ABCDE1234F">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Company Address</label>
+                            <textarea id="company-address-input" class="form-control" placeholder="123 Business Park" style="height: 50px; resize: none;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- User Join Fields -->
+                    <div id="user-registration-fields" style="display: none; animation: fadeIn 0.3s;">
+                        <div class="form-group">
+                            <label>Admin Email (Leave blank for Independent Account)</label>
+                            <input type="email" id="admin-email-input" class="form-control" placeholder="admin@company.com or blank">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="email-label">Business Email</label>
+                    <input type="email" id="email-input" class="form-control" placeholder="name@company.com" required>
+                </div>
+                <button id="btn-next-email" class="btn btn-primary btn-login hover-specular">Continue</button>
+                <div id="auth-hint" style="text-align: center; margin-top: 16px; font-size: 11px; color: var(--text-secondary); font-family: 'NDot', monospace;">
+                    Returning user? Sign in to access your invoices.
+                </div>
+            </div>
+
+            <!-- Step 1.5: Forgot Password Entry -->
+            <div id="step-forgot-password" class="auth-step" style="display: none;">
+                <div class="login-subtitle">Enter your email to receive a recovery code.</div>
+                <div class="form-group">
+                    <label>Recovery Email</label>
+                    <input type="email" id="recovery-email-input" class="form-control" placeholder="name@company.com" required>
+                </div>
+                <button id="btn-recovery-next" class="btn btn-primary btn-login hover-specular">Send Recovery Code</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                    <button type="button" class="btn-text back-to-login" style="font-size: 10px;">← Back to Login</button>
+                </div>
+            </div>
+
+            <!-- Step 2: OTP Verification -->
+            <div id="step-otp" class="auth-step" style="display: none;">
+                <div class="form-group" style="text-align: center;">
+                    <label>Verification Code</label>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 24px;">
+                        Enter the 6-digit code sent to <span id="display-email" style="color: var(--text-primary); font-weight: 500;"></span>
+                    </div>
+                    <div class="otp-container">
+                        <input type="text" maxlength="1" class="otp-box">
+                        <input type="text" maxlength="1" class="otp-box">
+                        <input type="text" maxlength="1" class="otp-box">
+                        <input type="text" maxlength="1" class="otp-box">
+                        <input type="text" maxlength="1" class="otp-box">
+                        <input type="text" maxlength="1" class="otp-box">
+                    </div>
+                </div>
+                <button id="btn-verify-otp" class="btn btn-primary btn-login hover-specular">Verify Code</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                    <button type="button" class="btn-text btn-back-to-email" style="font-size: 12px;">← Back</button>
+                    <button id="btn-resend-otp" class="btn-text" style="font-size: 12px;">Resend Code</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Password Creation/Login -->
+            <div id="step-password" class="auth-step" style="display: none;">
+                <div class="email-summary" style="margin-bottom: 24px; font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn-back-to-email" style="background: none; border: none; color: var(--accent-orange); cursor: pointer; padding: 0; font-size: 14px;">←</button>
+                    <span>Logging in as: <b id="summary-email" style="color: var(--text-primary);"></b></span>
+                    <span id="admin-badge" style="display: none; background: rgba(255, 87, 34, 0.1); color: var(--accent-orange); font-size: 9px; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255, 87, 34, 0.2); font-weight: 700; letter-spacing: 0.5px;">OWNER</span>
+                    <button type="button" class="btn-back-to-email btn-text" style="font-size: 10px; color: var(--accent-orange); margin-left: auto;">[Edit]</button>
+                </div>
+                <div class="form-group" style="position: relative; margin-top: 16px;">
+                    <label id="password-label">Create Password</label>
+                    <input type="password" id="password-input" class="form-control" placeholder="Minimum 8 characters" required>
+                    <button type="button" class="password-toggle btn-text" data-target="password-input" style="position: absolute; right: 0; bottom: 12px; font-size: 10px;">SHOW</button>
+                </div>
+                
+                <div id="login-forgot-container" style="text-align: right; margin-top: -16px; margin-bottom: 24px; display: none;">
+                    <button type="button" id="btn-forgot-password-step3" class="btn-text" style="font-size: 10px; font-family: 'NDot', monospace;">Forgot Password?</button>
+                </div>
+
+                <button id="btn-finish" class="btn btn-primary btn-login hover-specular">Complete Setup</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="industrial-footer">Smart Invoice inc.</div>
+
+    <script src="/js/utils.js?v=5"></script>
+    <script src="/js/api.js?v=5"></script>
+    <script src="/js/auth-flow.js?v=5"></script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .btn-slab {
+            padding: 4px 8px;
+            font-size: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-slab:hover {
+            background: var(--accent-orange);
+            color: #fff;
+            border-color: var(--accent-orange);
+        }
+    </style>
+    <title>Create Invoice | Smart Invoice</title>
+    <script>
+        (function() {
+          // Theme check
+          const theme = localStorage.getItem('theme');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+          } else {
+            document.documentElement.classList.remove('dark-mode');
+          }
+          
+          // Auth check - Immediate redirect if no token
+          const token = sessionStorage.getItem('token');
+          if (!token && window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        })();
+    </script>
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/form.css" rel="stylesheet">
+</head>
+<body>
+    <div class="ambient-background"></div>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-top">
+                <div class="brand">Smart Invoice<span class="dot">.</span></div>
+                <ul class="nav-links">
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="/invoices">Invoices</a></li>
+                    <li><a href="/clients">Clients</a></li>
+                    <li><a href="/create" class="active">Create Invoice</a></li>
+                    <li><a href="/settings">Settings</a></li>
+                </ul>
+            </div>
+            
+            <div class="nav-bottom">
+                <div style="padding: 0 24px 20px 24px;">
+                    <button id="themeToggle" class="btn btn-secondary" style="width: 100%; font-size: 11px; padding: 10px; font-weight: 700; letter-spacing: 1px;">THEME</button>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar" id="userAvatar">A</div>
+                    <div>
+                        <div style="font-weight: 600;" id="userName">User</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); cursor: pointer;" onclick="logout()">Sign Out</div>
+                    </div>
+                </div>
+                <div class="industrial-footer">Smart Invoice inc.</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-panel">
+            <header class="top-bar">
+                <h2>Create New Invoice</h2>
+            </header>
+
+            <div class="content-area">
+                <form id="invoiceForm" class="invoice-form-container">
+                    
+                    <!-- Left Column: Inputs -->
+                    <div class="form-left">
+                        <!-- Client Info -->
+                        <div class="form-section glass-panel">
+                            <h3 class="section-title">Client Information</h3>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Client Name *</label>
+                                    <input type="text" id="client_name" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Client Email *</label>
+                                    <input type="email" id="client_email" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="grid-2">
+                            <div class="form-group">
+                                <label>Client Address</label>
+                                <textarea id="client_address" class="form-control" rows="2" placeholder="Street, City, State, ZIP..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Client Country</label>
+                                <select id="client_country" class="form-control" onchange="handleCountryChange()">
+                                    <option value="India">🇮🇳 India</option>
+                                    <option value="USA">🇺🇸 United States</option>
+                                    <option value="UK">🇬🇧 United Kingdom</option>
+                                    <option value="UAE">🇦🇪 United Arab Emirates</option>
+                                    <option value="Australia">🇦🇺 Australia</option>
+                                    <option value="Canada">🇨🇦 Canada</option>
+                                    <option value="Japan">🇯🇵 Japan</option>
+                                    <option value="Singapore">🇸🇬 Singapore</option>
+                                    <option value="Germany">🇩🇪 Germany</option>
+                                    <option value="France">🇫🇷 France</option>
+                                    <option value="Other">🌍 Other / International</option>
+                                </select>
+                                <p style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;">Selecting a country auto-configures currency and tax slabs.</p>
+                            </div>
+                        </div>
+                        </div>
+
+                        <!-- Invoice Details -->
+                        <div class="form-section glass-panel">
+                            <h3 class="section-title">Invoice Details</h3>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Invoice Prefix</label>
+                                    <input type="text" id="invoice_number_prefix" class="form-control" placeholder="e.g., DEV-" value="INV-">
+                                </div>
+                                <div class="form-group">
+                                    <label>Specific Number (Optional)</label>
+                                    <input type="text" id="invoice_number" class="form-control" placeholder="Overwrites auto-gen">
+                                </div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>Due Date *</label>
+                                    <input type="date" id="due_date" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Currency</label>
+                                    <select id="currency" class="form-control">
+                                        <option value="INR" selected>INR (₹)</option>
+                                        <option value="USD">USD ($)</option>
+                                        <option value="EUR">EUR (€)</option>
+                                        <option value="GBP">GBP (£)</option>
+                                        <option value="JPY">JPY (¥)</option>
+                                        <option value="AED">AED (د.إ)</option>
+                                        <option value="CAD">CAD ($)</option>
+                                        <option value="AUD">AUD ($)</option>
+                                </select>
+                                </div>
+                            </div>
+                            
+                            <div class="grid-2" style="margin-top: 16px;">
+                                <div class="form-group" style="display: flex; align-items: center; gap: 12px; background: rgba(255,87,34,0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,87,34,0.1);">
+                                    <input type="checkbox" id="is_template" style="width: 18px; height: 18px; cursor: pointer;">
+                                    <div>
+                                        <label for="is_template" style="margin-bottom: 0; cursor: pointer; font-weight: 700;">Save as Recurring Template</label>
+                                        <p style="font-size: 10px; color: var(--text-secondary); margin: 0;">This will allow you to quickly clone this invoice later.</p>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="recurrence_group" style="display: none;">
+                                    <label>Recurrence Interval</label>
+                                    <select id="recurrence" class="form-control">
+                                        <option value="none">Manual Clone Only</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                        <option value="yearly">Yearly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="grid-2">
+                                <div class="form-group" style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
+                                        <label id="label_tax_1" style="font-size: 11px; font-weight: 700; color: var(--accent-orange);">CGST Rate (%)</label>
+                                        <button type="button" id="btnSuggestTax" class="btn-glass-tool" style="font-size: 9px; padding: 2px 5px;">AI SUGGEST</button>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        <input type="number" id="cgst_rate" class="form-control" value="9" step="0.01" 
+                                               style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); padding: 10px; border-radius: 4px; font-weight: 700; font-size: 16px;">
+                                        <div class="quick-slabs" id="slabs_1" style="display: flex; gap: 4px;">
+                                            <button type="button" class="btn-slab" onclick="setTaxRate('cgst_rate', 0)">0%</button>
+                                            <button type="button" class="btn-slab" onclick="setTaxRate('cgst_rate', 2.5)">5%</button>
+                                            <button type="button" class="btn-slab" onclick="setTaxRate('cgst_rate', 6)">12%</button>
+                                            <button type="button" class="btn-slab" onclick="setTaxRate('cgst_rate', 9)">18%</button>
+                                            <button type="button" class="btn-slab" onclick="setTaxRate('cgst_rate', 14)">28%</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label id="label_tax_2" style="display: block; margin-bottom: 8px; font-size: 11px; font-weight: 700; color: var(--accent-orange);">SGST Rate (%)</label>
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        <input type="number" id="sgst_rate" class="form-control" value="9" step="0.01" 
+                                               style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); padding: 10px; border-radius: 4px; font-weight: 700; font-size: 16px;">
+                                        <div class="quick-slabs" id="slabs_2" style="display: flex; gap: 4px;">
+                                            <button type="button" class="btn-slab" onclick="setTaxRate('sgst_rate', 0)">0%</button>
+                                            <button type="button" class="btn-slab" onclick="setTaxRate('sgst_rate', 2.5)">5%</button>
+                                            <button type="button" class="btn-slab" onclick="setTaxRate('sgst_rate', 6)">12%</button>
+                                            <button type="button" class="btn-slab" onclick="setTaxRate('sgst_rate', 9)">18%</button>
+                                            <button type="button" class="btn-slab" onclick="setTaxRate('sgst_rate', 14)">28%</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            </div>
+                        </div>
+
+                        <!-- Line Items -->
+                        <div class="form-section glass-panel">
+                            <h3 class="section-title">Line Items</h3>
+
+                             <div class="line-items-header">
+                                 <div>Description</div>
+                                 <div style="text-align: center;">Qty</div>
+                                 <div style="text-align: center;">Unit</div>
+                                 <div>Rate</div>
+                                 <div>Amount</div>
+                                 <div></div>
+                             </div>
+                            
+                            <div id="lineItemsContainer">
+                                <!-- Dynamic rows injected by JS -->
+                            </div>
+                            
+                            <button type="button" id="btnAddItem" class="btn btn-secondary" style="margin-top: 16px;">+ Add Item</button>
+
+                            <!-- Notes Section -->
+                            <div class="form-group" style="margin-top: 32px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <label>Closing Notes / Payment Terms</label>
+                                    <button type="button" id="btnDraftNote" class="btn-glass-tool" style="font-size: 11px; padding: 4px 8px;">(AI) Draft Note</button>
+                                </div>
+                                <textarea id="notes" class="form-control" rows="4" placeholder="Thank you for your business..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Summary -->
+                    <div class="form-right">
+                        <div class="summary-panel glass-panel">
+                            <h3 class="section-title">Summary</h3>
+                            
+                            <div class="summary-row">
+                                <span>Subtotal</span>
+                                <span id="summary_subtotal">0.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span id="label_summary_tax_1">CGST</span>
+                                <span id="summary_cgst">0.00</span>
+                            </div>
+                            <div class="summary-row" id="row_summary_tax_2">
+                                <span id="label_summary_tax_2">SGST</span>
+                                <span id="summary_sgst">0.00</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Total</span>
+                                <span id="summary_total">0.00</span>
+                            </div>
+                            
+                            <div id="audit_results" class="glass-panel" style="display: none; margin-top: 24px; padding: 16px; border-color: rgba(255,87,34,0.3); background: rgba(255,87,34,0.03);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 11px; font-weight: 700; color: var(--accent-orange); letter-spacing: 1px;">AI AUDIT GUARD</span>
+                                    <span id="audit_status_badge" class="badge badge-success">SAFE</span>
+                                </div>
+                                <p id="audit_note" style="font-size: 12px; color: var(--text-primary); margin-bottom: 12px;"></p>
+                                <ul id="audit_issues" style="font-size: 11px; color: #ff3b30; padding-left: 16px; margin: 0;"></ul>
+                            </div>
+                            
+                            <div style="display: flex; gap: 8px; margin-top: 24px;">
+                                <button type="button" id="btnAudit" class="btn btn-secondary" style="flex: 1; font-size: 12px;">🔍 Audit</button>
+                                <button type="submit" id="btnSubmit" class="btn btn-primary hover-specular" style="flex: 2;">Create Invoice</button>
+                            </div>
+                            <div style="margin-top: 12px;">
+                                <button type="button" id="btnSaveDraft" class="btn btn-secondary" style="width: 100%; font-size: 11px; padding: 10px; border-style: dashed; opacity: 0.8;">SAVE AS DRAFT ONLY</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error("GLOBAL JS ERROR:", e.message, "at", e.filename, ":", e.lineno);
+        });
+    </script>
+    <script src="/js/utils.js?v=7"></script>
+    <script src="/js/api.js?v=7"></script>
+    <script src="/js/magnetic.js?v=7"></script>
+    <script src="/js/invoice-form.js?v=7"></script>
+</body>
+</html>

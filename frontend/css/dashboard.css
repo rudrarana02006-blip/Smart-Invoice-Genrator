@@ -1,0 +1,93 @@
+/* ===================================
+   Dashboard & App Layout (Nothing Hardware)
+   =================================== */
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px; /* Aligned to grid */
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    padding: 30px; /* Aligned to grid */
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Half grid for internal spacing */
+    min-height: 150px; /* 5 rows of dots */
+}
+
+.stat-title {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+}
+
+.stat-value {
+    font-size: 40px;
+    font-weight: 400;
+    font-family: 'DotGothic16', monospace;
+    color: var(--text-primary);
+}
+
+/* Recent Invoices Section */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.invoice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.invoice-row {
+    padding: 20px 24px;
+    display: grid;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    font-family: 'Inter', sans-serif;
+    transition: var(--transition);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+}
+
+.invoice-row:hover {
+    transform: translateY(-2px);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+body.dark-mode .invoice-row:hover {
+    background: #1a1a1a;
+    border-color: var(--accent-orange);
+}
+
+.invoice-number {
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+}
+
+.invoice-client {
+    font-weight: 500;
+}
+
+.invoice-date {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.invoice-amount {
+    font-weight: 600;
+    text-align: right;
+    font-family: 'Inter', sans-serif;
+}

@@ -1,12 +1,12 @@
-# 🚀 Smart Invoice Generator
+# 🚀 Devleds Engine
 
 ```text
  __________________________________________          .----------------------------------.
-/  ______________________________________  \         |  S M A R T   I N V O I C E       |
+/  ______________________________________  \         |  DE V L E D S                    |
 |  /                                      \  |        |  ==============================  |
-|  |        █▀▀ █▄▄█ █▀▀█ █▀▀▄ ▀▀█▀▀      |  |        |  INV-2026-001                    |
-|  |        ▀▀█ █  █ █▄▄█ █▄▄▀   █        |  |        |  Date: 2026-05-17                |
-|  |        ▀▀▀ ▀  ▀ ▀  ▀ ▀  ▀   ▀        |  |        |  ------------------------------  |
+|  |   █▀▀▄ █▀▀ █  █ █    █▀▀ █▀▀▄ █▀▀      |  |        |  INV-2026-001                    |
+|  |   █  █ █▀▀ ▀▄▄▀ █    █▀▀ █  █ ▀▀█      |  |        |  Date: 2026-05-17                |
+|  |   ▀▀▀  ▀▀▀  ▀▀  ▀▀▀  ▀▀▀ ▀▀▀  ▀▀▀      |  |        |  ------------------------------  |
 |  |                                        |  |        |  ITEMS             QTY     RATE  |
 |  |   [ INTELLIGENT BILLING SYSTEM ]       |  |        |  - AI Branding      1      FREE  |
 |  |   ------------------------------       |  |        |  - Liquid Glass     1      FREE  |
@@ -32,7 +32,7 @@
 ---
 
 ## ✨ Overview
-Smart Invoice Generator is a high-performance, design-centric billing platform. It goes beyond simple document generation by utilizing **AI Vision** to clone design aesthetics from any sample invoice, allowing for "Style DNA" extraction and automated professional branding.
+Devleds Engine is a high-performance, design-centric billing platform. It goes beyond simple document generation by utilizing **AI Vision** to clone design aesthetics from any sample invoice, allowing for "Style DNA" extraction and automated professional branding.
 
 ## 🌟 Key Features
 - **🧠 AI Style Cloning**: Upload a JPEG/PDF of any invoice. Our Gemini-powered engine analyzes the "Design DNA" (typography, spacing, color palettes) and replicates it for your business.
@@ -83,4 +83,4 @@ Smart Invoice Generator is a high-performance, design-centric billing platform. 
 
 ---
 
-*Built with ❤️ by Smart Invoice Team.*
+*Built with ❤️ by Devleds.*

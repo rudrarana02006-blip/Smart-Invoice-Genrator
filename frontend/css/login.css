@@ -1,0 +1,331 @@
+/* ===================================
+   Smart Invoice Generator — Organic Liquid Glass Login
+   =================================== */
+
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 48px;
+    text-align: left;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.login-logo {
+    font-family: 'NDot', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.login-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+}
+
+/* OTP Styling */
+.otp-container {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.otp-box {
+    width: 44px;
+    height: 56px;
+    text-align: center;
+    font-size: 24px;
+    font-family: 'NDot', sans-serif;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.otp-box:focus {
+    outline: none;
+    border-color: var(--accent-orange);
+    background: white;
+    box-shadow: 0 0 15px rgba(255, 87, 34, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Dark Mode Overrides for OTP Accessibility */
+.dark-mode .otp-box {
+    background: #1A1A1A !important;
+    border: 1px solid #333333 !important;
+    color: #FF4F00 !important;
+    caret-color: #FF4F00 !important;
+}
+
+.dark-mode .otp-box:focus {
+    border-color: #FF4F00 !important;
+    background: #222222 !important;
+    box-shadow: 0 0 20px rgba(255, 79, 0, 0.2) !important;
+    color: #FF4F00 !important;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--accent-orange);
+    cursor: pointer;
+    font-weight: 500;
+    padding: 4px 8px;
+    transition: opacity 0.2s;
+}
+
+.btn-text:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+.auth-step {
+    animation: fadeInSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-form {
+    text-align: left;
+}
+
+.btn-login {
+    width: 100%;
+    margin-top: 24px;
+    padding: 16px;
+    font-size: 16px;
+}
+
+/* Exit transition */
+body.logging-in {
+    animation: glitchCollapse 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes glitchCollapse {
+    0% { opacity: 1; transform: scale(1); filter: none; }
+    50% { opacity: 0.5; transform: translate(5px, -5px); filter: contrast(150%) invert(10%); }
+    100% { opacity: 0; transform: scale(0.95); filter: grayscale(100%); }
+}
+
+/* Role Toggle Switch */
+.role-toggle-group {
+    display: flex;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-top: 8px;
+}
+
+.btn-role {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-role.active {
+    background: var(--accent-orange) !important;
+    color: #000 !important;
+    font-weight: 700;
+}
+
+.btn-role:hover:not(.active) {
+    background: rgba(255, 87, 34, 0.05);
+    color: var(--accent-orange);
+}
+
+.btn-mode.active {
+    background: var(--accent-orange) !important;
+    color: #000 !important;
+    font-weight: 700;
+}
+
+.btn-mode:hover:not(.active) {
+    background: rgba(255,255,255,0.1);
+    color: var(--text-primary);
+}
+
+.industrial-footer {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.2);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    font-family: 'NDot', monospace;
+    pointer-events: none;
+}
+
+[data-theme="dark"] .role-toggle-group {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* State Transitions & Animations */
+.auth-step {
+    animation: authStepFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes authStepFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#signup-intent-container, #admin-details-fields, #user-details-fields {
+    animation: fieldSlideIn 0.3s ease-out;
+}
+
+@keyframes fieldSlideIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.btn-mode.active {
+    background: var(--text-primary) !important;
+    color: var(--bg-primary) !important;
+}
+
+/* Role Segmented Control (Tabs) */
+.role-segmented-control {
+    display: flex;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+}
+
+.role-segmented-control .btn-role {
+    flex: 1;
+    padding: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.role-segmented-control .btn-role.active {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.role-segmented-control .btn-role.active::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--accent-orange);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-orange);
+}
+
+.auth-mode-toggle {
+    margin-bottom: 32px !important;
+}
+
+#admin-registration-fields, #user-registration-fields {
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    padding-left: 16px;
+    margin-bottom: 24px;
+}
+
+/* Dual Portal Layout Styles */
+.portal-selector {
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.btn-portal {
+    flex: 1;
+    padding: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.btn-portal.active {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.auth-mode-toggle {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 16px;
+    margin-bottom: 32px;
+}
+
+.btn-mode {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.3s;
+}
+
+.btn-mode.active {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+}
+
+.auth-hint-text {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+#registration-fields-container {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 24px;
+    margin-top: 8px;
+}

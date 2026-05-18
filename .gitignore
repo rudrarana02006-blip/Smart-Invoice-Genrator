@@ -10,9 +10,10 @@ env/
 
 # MacOS
 .DS_Store
+*.code-workspace
 
 # UI (As requested to keep private/separate)
-frontend/
+# frontend/
 
 # Local data
 backend/uploads/

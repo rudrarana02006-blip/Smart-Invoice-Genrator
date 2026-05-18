@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients | Smart Invoice</title>
+    <script>
+        (function() {
+          // Theme check
+          const theme = localStorage.getItem('theme');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+          } else {
+            document.documentElement.classList.remove('dark-mode');
+          }
+          
+          // Auth check - Immediate redirect if no token
+          const token = sessionStorage.getItem('token');
+          if (!token && window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        })();
+    </script>
+    <link href="/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .client-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .client-card {
+            background: var(--bg-panel);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            transition: var(--transition);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .client-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-orange);
+            box-shadow: 0 10px 30px rgba(255, 87, 34, 0.1);
+        }
+
+        .client-initials {
+            width: 50px;
+            height: 50px;
+            background: #000;
+            border: 1px solid var(--accent-orange);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DotGothic16', monospace;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        body.dark-mode .client-initials {
+            background: #fff;
+            color: #000;
+        }
+
+        .client-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .action-btn-small {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid var(--border-dark);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .action-btn-small:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            transform: scale(1.1);
+        }
+
+        .action-btn-small.delete:hover {
+            background: #ff3b30;
+            color: #fff;
+            border-color: #ff3b30;
+        }
+
+        .client-card h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .client-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Modal specific */
+        .modal-content {
+            max-width: 700px;
+            border-radius: var(--radius-lg);
+            background: var(--bg-primary) !important;
+            border: 2px solid #000;
+            box-shadow: 15px 15px 0px rgba(0,0,0,1);
+        }
+
+        body.dark-mode .modal-content {
+            box-shadow: 15px 15px 0px rgba(255,255,255,0.1);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Elements -->
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-top">
+                <div class="brand">Smart Invoice<span class="dot">.</span></div>
+                <ul class="nav-links">
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="/invoices">Invoices</a></li>
+                    <li><a href="/clients" class="active">Clients</a></li>
+                    <li><a href="/create">Create Invoice</a></li>
+                    <li><a href="/settings">Settings</a></li>
+                </ul>
+            </div>
+            
+            <div class="nav-bottom">
+                <div style="padding: 0 24px 20px 24px;">
+                    <button id="themeToggle" class="btn btn-secondary" style="width: 100%; font-size: 11px; padding: 10px; font-weight: 700; letter-spacing: 1px;">THEME</button>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar" id="userAvatar">A</div>
+                    <div>
+                        <div style="font-weight: 600;" id="userName">User</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); cursor: pointer;" onclick="logout()">Sign Out</div>
+                    </div>
+                </div>
+                <div class="industrial-footer">Smart Invoice inc.</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-panel">
+            <header class="top-bar">
+                <h2>Client Management</h2>
+                <button class="btn btn-primary" id="btn-add-client">Add Client</button>
+            </header>
+
+            <div class="content-area">
+                <div class="glass-panel" style="margin-top: 0;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <input type="text" id="client-search" class="form-control" placeholder="Search clients by name, email or company..." style="border-bottom: 1px solid var(--border-dark);">
+                    </div>
+                </div>
+
+                <div id="clients-loading" class="glass-panel" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div class="loading-spinner-tiny" style="width: 30px; height: 30px; border-width: 3px;"></div>
+                    <p style="margin-top: 15px; font-family: 'DotGothic16', monospace;">Synchronizing Contacts...</p>
+                </div>
+
+                <div id="clients-empty" class="glass-panel" style="text-align: center; display: none;">
+                    <h3 style="margin-bottom: 10px;">Zero Contacts</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Start by adding your first client to streamline your invoicing.</p>
+                    <button class="btn btn-secondary" onclick="document.getElementById('btn-add-client').click()">Add Your First Client</button>
+                </div>
+
+                <div id="clients-grid" class="client-grid">
+                    <!-- Clients populated here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Client Modal -->
+    <div id="client-modal" class="modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="modal-title">Add New Client</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="client-form">
+                <input type="hidden" id="edit-client-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="client-name">Full Name *</label>
+                        <input type="text" id="client-name" required placeholder="John Doe" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="client-email">Email Address *</label>
+                        <input type="email" id="client-email" required placeholder="john@example.com" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="client-phone">Phone Number</label>
+                        <input type="text" id="client-phone" placeholder="+1 (555) 000-0000" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="client-company">Company Name</label>
+                        <input type="text" id="client-company" placeholder="Acme Corp" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="client-gstin">GSTIN</label>
+                        <input type="text" id="client-gstin" placeholder="22AAAAA0000A1Z5" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="client-address">Address</label>
+                        <textarea id="client-address" rows="1" placeholder="123 Business St, City" class="form-control"></textarea>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+                <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Default Tax Settings</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="default-cgst">Default CGST (%)</label>
+                        <input type="number" id="default-cgst" step="0.01" value="0" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="default-sgst">Default SGST (%)</label>
+                        <input type="number" id="default-sgst" step="0.01" value="0" class="form-control">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-modal-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-client">Save Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="/js/api.js?v=5"></script>
+    <script src="/js/utils.js?v=5"></script>
+    <script src="/js/clients.js?v=5"></script>
+</body>
+</html>
